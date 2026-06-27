@@ -1,0 +1,11 @@
+.app-header {
+    text-align: center;
+    padding: 24px;
+    background: #06254a;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 48px;
+    color: #ff6b2c;
+}

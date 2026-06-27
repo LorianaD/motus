@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Motus{% endblock %}
+
+{% block body %}
+    <div class="game-page">
+        <section class="game-card">
+            <div class="game-info">
+                <p>Partie n° {{ game.id }}</p>
+                <p>{{ game.word.length }} lettres</p>
+            </div>
+
+            <div class="motus-grid">
+                {% for row in 1..6 %}
+                    {% set result = attemptResults[row - 1] ?? null %}
+
+                    <div class="motus-row">
+                        {% for col in 1..game.word.length %}
+                            {% set item = result ? result[col - 1] : null %}
+
+                            <div class="motus-cell {{ item ? item.status : '' }}">
+                                {% if item %}
+                                    {{ item.letter }}
+                                {% elseif row == 1 and col == 1 %}
+                                    {{ game.word.word|slice(0, 1) }}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        <div class="game-input">
+            {% if game.status == 'won' %}
+                <p class="game-message success">Bravo, vous avez gagné !</p>
+            {% elseif game.status == 'lost' %}
+                <p class="game-message error">
+                    Perdu ! Le mot était {{ game.word.word }}.
+                </p>
+            {% endif %}
+
+            {% if game.status == 'in_progress' %}
+                <div class="game-input">
+                    <form method="post" data-turbo="false">
+                        <input
+                            type="text"
+                            name="guess"
+                            maxlength="{{ game.word.length }}"
+                            minlength="{{ game.word.length }}"
+                            required
+                            autocomplete="off"
+                            class="game-textbox"
+                        >
+
+                        <button type="submit" class="game-button">
+                            Valider
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
