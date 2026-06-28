@@ -8,10 +8,11 @@
             <div class="game-info">
                 <p>Partie n° {{ game.id }}</p>
                 <p>{{ game.word.length }} lettres</p>
+                <p>Essai {{ game.attemptsCount }}/{{ constant('App\\Entity\\Game::MAX_ATTEMPTS') }}</p>
             </div>
 
             <div class="motus-grid">
-                {% for row in 1..6 %}
+                {% for row in 1..constant('App\\Entity\\Game::MAX_ATTEMPTS') %}
                     {% set result = attemptResults[row - 1] ?? null %}
 
                     <div class="motus-row">
@@ -30,7 +31,7 @@
                 {% endfor %}
             </div>
         </section>
-        <div class="game-input">
+        <div class="game-bottom">
             {% if game.status == 'won' %}
                 <p class="game-message success">Bravo, vous avez gagné !</p>
             {% elseif game.status == 'lost' %}
@@ -39,14 +40,26 @@
                 </p>
             {% endif %}
 
+            {% if game.status != 'in_progress' %}
+                <a href="{{ path('app_game_new') }}" class="game-button">
+                    Nouvelle partie
+                </a>
+            {% endif %}
+
             {% if game.status == 'in_progress' %}
                 <div class="game-input">
-                    <form method="post" data-turbo="false">
+                    {% if error %}
+                        <p class="game-message error">{{ error }}</p>
+                    {% endif %}
+
+                    <form method="post" data-turbo="false" class="game-form">
                         <input
                             type="text"
                             name="guess"
                             maxlength="{{ game.word.length }}"
                             minlength="{{ game.word.length }}"
+                            pattern="[A-Za-zÀ-ÿ]+"
+                            title="Veuillez entrer uniquement des lettres."
                             required
                             autocomplete="off"
                             class="game-textbox"

@@ -18,34 +18,36 @@ final class GameController extends AbstractController
     {
         $user = $this->getUser();
 
-        $game = $gameService->getCurrentGame($user);
-
-        if (!$game) {
-            $game = $gameService->createGame($user);
-        }
+        $game = $gameService->getOrCreateGame($user);
+        
+        $error = null;
 
         $guess = $request->request->get('guess');
-        $result = null;
 
         if ($guess) {
-            $result = $attemptService->createAttempt(
-                $game,
-                $guess,
-            );
+            $result = $attemptService->createAttempt( $game, $guess );
+
+            if (isset($result['error'])) {
+                $error = $result['error'];
+            }
         }
 
-        $attemptResults = [];
-
-        foreach ($game->getAttempts() as $attempt) {
-            $attemptResults[] = $wordService->wordCheck(
-                $attempt->getProposedWord(),
-                $game->getWord()->getWord()
-            );
-        }        
+        $attemptResults = $wordService->getAttemptResults($game);
 
         return $this->render('game/index.html.twig', [
             'game' => $game,
             'attemptResults' => $attemptResults,
+            'error' => $error,
         ]);
+    }
+
+    #[Route('/new', name: 'app_game_new', methods: ['GET', 'POST'])]
+    public function new(GameService $gameService) : Response 
+    {
+        $user = $this->getUser();
+
+        $gameService->createGame($user);
+
+        return $this->redirectToRoute('app_game');
     }
 }

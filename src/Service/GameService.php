@@ -21,7 +21,7 @@ class GameService
         return $this->wordRepository->findRandom();
     }
 
-    public function createGame(User $user)
+    public function createGame(User $user) : Game
     {
         $word = $this->getRandomWord();
 
@@ -29,13 +29,7 @@ class GameService
             throw new Exception('Aucun mot disponible.');
         }
 
-        $game = new Game();
-
-        $game->setUser($user);
-        $game->setWord($word);
-        $game->setStatus('in_progress');
-        $game->setAttemptsCount(0);
-        $game->setCreatedAt(new \DateTimeImmutable());
+        $game = $this->initializeGame($user, $word);
 
         $this->em->persist($game);
         $this->em->flush();
@@ -50,12 +44,36 @@ class GameService
             ->findOneBy(
                 [
                     'user' => $user,
-                    'status' => 'in_progress',
+                    'status' => Game::STATUS_IN_PROGRESS,
                 ],
                 [
                     'createdAt' => 'DESC',
                 ]
             );
-    }    
+    }
+
+    public function getOrCreateGame(User $user) : Game
+    {
+        $game = $this->getCurrentGame($user);
+
+        if (!$game) {
+            $game = $this->createGame($user);
+        }
+
+        return $game;
+    }
+
+    private function initializeGame(User $user, Word $word) : Game
+    {
+        $game = new Game();
+
+        $game->setUser($user);
+        $game->setWord($word);
+        $game->setStatus(Game::STATUS_IN_PROGRESS);
+        $game->setAttemptsCount(0);
+        $game->setCreatedAt(new \DateTimeImmutable());
+
+        return $game;
+    }
 }
 

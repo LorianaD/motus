@@ -43,12 +43,30 @@ class WordRepository extends ServiceEntityRepository
 
     public function findRandom(): ?Word
     {
-        $sql = 'SELECT id FROM word ORDER BY RAND() LIMIT 1';
-        
+        $count = $this->count([]);
+
+        if ($count === 0) {
+            return null;
+        }
+
+        $randomOffset = random_int(0, $count - 1);
+
         return $this->createQueryBuilder('w')
+            ->setFirstResult($randomOffset)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-        
+    }
+
+    public function existsByWord(string $word): bool
+    {
+        $result = $this->createQueryBuilder('w')
+            ->select('COUNT(w.id)')
+            ->where('w.word = :word')
+            ->setParameter('word', strtoupper($word))
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result > 0;
     }
 }

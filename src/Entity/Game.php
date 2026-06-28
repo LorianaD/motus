@@ -32,6 +32,12 @@ class Game
     #[ORM\JoinColumn(nullable: false)]
     private ?Word $word = null;
 
+    public const MAX_ATTEMPTS = 6;
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_WON = 'won';
+    public const STATUS_LOST = 'lost';
+
     /**
      * @var Collection<int, Attempt>
      */
